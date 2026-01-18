@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}About - CiniBooking{% endblock %}
+
+{% block content %}
+<div class="hero" style="padding: 4rem 2rem; max-width: 800px;">
+    <h1>Reinventing the<br>Cinema Experience.</h1>
+    <p>CiniBooking was built to bridge the gap between movie lovers and their favorite theaters. We believe booking a ticket should be as exciting as the movie itself.</p>
+</div>
+
+<div class="features-section" style="background: white;">
+    <div class="features-container" style="max-width: 800px;">
+        <div style="margin-bottom: 3rem;">
+            <h3 style="font-size: 1.5rem; color: var(--primary); margin-bottom: 1rem;">Our Mission</h3>
+            <p style="color: var(--gray); font-size: 1.1rem; line-height: 1.8;">
+                To provide students and developers with a robust, hands-on example of a modern web application using Python Flask. This project simulates real-world booking logic, session management, and role-based access control.
+            </p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <div>
+                <h4 style="margin-bottom: 1rem;">Frontend Stack</h4>
+                <ul style="list-style: none; color: var(--gray);">
+                    <li style="margin-bottom: 0.5rem;">• HTML5 & Semantic Tags</li>
+                    <li style="margin-bottom: 0.5rem;">• CSS3 (Flexbox & Grid)</li>
+                    <li style="margin-bottom: 0.5rem;">• Responsive Design</li>
+                </ul>
+            </div>
+            <div>
+                <h4 style="margin-bottom: 1rem;">Backend Stack</h4>
+                <ul style="list-style: none; color: var(--gray);">
+                    <li style="margin-bottom: 0.5rem;">• Python 3.x</li>
+                    <li style="margin-bottom: 0.5rem;">• Flask Framework</li>
+                    <li style="margin-bottom: 0.5rem;">• Jinja2 Templating</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

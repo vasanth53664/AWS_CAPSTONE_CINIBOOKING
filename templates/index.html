@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome - CiniBooking{% endblock %}
+
+{% block content %}
+
+<div class="hero">
+    <h1>Booking movies<br>should be this easy.</h1>
+    <p>Experience the magic of cinema without the hassle of lines. Book your seats instantly.</p>
+    
+    <div style="margin-top: 2rem;">
+        {% if not session.get('username') and not session.get('admin') %}
+            <a href="{{ url_for('login') }}"><button class="btn btn-primary">Book Now</button></a>
+            <a href="{{ url_for('signup') }}"><button class="btn btn-secondary">Sign Up</button></a>
+        {% else %}
+            <a href="{{ url_for('user_dashboard') }}"><button class="btn btn-primary">Go to Dashboard</button></a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="features-section">
+    <div class="features-container">
+        <div class="feature-card">
+            <span class="feature-icon">⚡</span>
+            <h3>Instant Booking</h3>
+            <p>Select your movie, pick your seat, and get your digital ticket in seconds.</p>
+        </div>
+        
+        <div class="feature-card">
+            <span class="feature-icon">🍿</span>
+            <h3>Latest Releases</h3>
+            <p>We update our catalog daily so you never miss a blockbuster premiere.</p>
+        </div>
+        
+        <div class="feature-card">
+            <span class="feature-icon">📱</span>
+            <h3>Mobile Ready</h3>
+            <p>Your tickets are saved to your account. Just show your phone at the door.</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

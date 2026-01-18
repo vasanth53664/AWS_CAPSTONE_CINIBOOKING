@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CiniBooking{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body style="font-family: 'Inter', sans-serif;"> <nav class="navbar">
+        <div class="nav-brand">CiniBooking</div>
+        <div class="nav-links">
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('about') }}">About</a>
+            
+            {% if session.get('username') %}
+                <a href="{{ url_for('user_dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('logout') }}" style="color: var(--primary);">Logout</a>
+            
+            {% elif session.get('admin') %}
+                <a href="{{ url_for('admin_dashboard') }}">Admin Panel</a>
+                <a href="{{ url_for('admin_logout') }}" style="color: var(--primary);">Logout</a>
+            
+            {% else %}
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('signup') }}">Signup</a>
+                <a href="{{ url_for('admin_login') }}" class="admin-link">Admin</a>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div>
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 CiniBooking System. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

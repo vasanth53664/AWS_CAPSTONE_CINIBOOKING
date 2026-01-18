@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - CiniBooking{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h2>Welcome Back</h2>
+    <form action="{{ url_for('login') }}" method="POST" class="auth-form">
+        <input type="text" name="username" placeholder="Enter your username" required>
+        <input type="password" name="password" placeholder="Enter your password" required>
+        <button type="submit" class="btn btn-primary">Login to Account</button>
+    </form>
+    <div class="auth-footer">
+        <p>New to CiniBooking? <a href="{{ url_for('signup') }}">Create Account</a></p>
+    </div>
+</div>
+{% endblock %}
