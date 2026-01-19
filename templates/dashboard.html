@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2>Now Showing</h2>
+        
+        {% if is_admin %}
+        <a href="/admin/add">
+            <button class="btn-nav" style="background: var(--primary); border: none;">+ Add Movie (Admin)</button>
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="grid">
+        {% for movie in movies %}
+        <div class="movie-card">
+            <div class="card-img">🎬</div>
+            <div class="card-info">
+                <span class="tag">{{ movie.genre }}</span>
+                <h3>{{ movie.title }}</h3>
+                <p style="color: var(--accent);">📍 Showing in {{ movie.theaters|length }} Locations</p>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">Time: {{ movie.time }}</p>
+                
+                <a href="{{ url_for('book', movie_id=movie.id) }}">
+                    <button style="width:100%; padding:0.8rem; background:var(--border); color:white; border:none; border-radius:6px; cursor:pointer;">
+                        Book for ${{ movie.price }}
+                    </button>
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <p>No movies available.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

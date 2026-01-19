@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container" style="text-align: center;">
+    <h2 style="margin-bottom: 0.5rem;">{{ movie.title }}</h2>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">{{ movie.time }}</p>
+
+    <form action="/payment">
+        <div style="max-width: 400px; margin: 0 auto 2rem auto; text-align: left;">
+            <label style="color: var(--primary); font-weight: bold;">Select Theater:</label>
+            <select name="theater" style="width: 100%; padding: 1rem; background: #1b1e23; color: white; border: 1px solid var(--border); border-radius: 8px; margin-top: 0.5rem;">
+                {% for theater in movie.theaters %}
+                <option value="{{ theater }}">{{ theater }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="screen">CINEMA SCREEN</div>
+
+        <div class="seat-grid">
+            {% for i in range(1, 41) %}
+            <div>
+                <input type="checkbox" id="s{{i}}">
+                <label for="s{{i}}" class="seat-label"></label>
+            </div>
+            {% endfor %}
+        </div>
+        <button class="btn-primary" style="margin-top: 2rem;">Proceed to Payment</button>
+    </form>
+</div>
+{% endblock %}

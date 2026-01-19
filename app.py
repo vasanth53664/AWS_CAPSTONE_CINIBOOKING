@@ -1,141 +1,126 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, session, redirect, url_for, request
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'
+app.secret_key = 'movie_magic_secure'
 
-# --- In-Memory Database ---
-users = {}          # Stores user credentials
-admin_users = {}    # Stores admin credentials
-movies = []         # Stores movie info: [{'id': 1, 'title': 'Avatar', 'slots': 100, 'price': 15}]
-bookings = {}       # Stores bookings: {'username': [{'movie_title': 'Avatar', 'seats': 2}]}
+# --- 1. ADMIN CONFIG ---
+admin_users = {
+    'admin': 'password123',
+    'thiru': 'mysecretpass'
+}
 
-# --- Core Routes ---
+# --- 2. USER DATABASE (Temporary Memory) ---
+# Stores registered users. Format: {'john': 'pass1', 'jane': 'pass2'}
+users_db = {} 
+
+# --- MOCK MOVIE DATA ---
+movies = [
+    {
+        'id': 1,
+        'title': 'Interstellar Return',
+        'genre': 'Sci-Fi',
+        'theaters': ['IMAX City Center', 'PVR Grand Mall'],
+        'time': '7:00 PM',
+        'price': 15.00
+    },
+    {
+        'id': 2,
+        'title': 'The Cyberpunk Era',
+        'genre': 'Action',
+        'theaters': ['PVR Grand Mall', 'Inox Forum'],
+        'time': '9:30 PM',
+        'price': 12.50
+    }
+]
+
+# --- ROUTES ---
 @app.route('/')
 def index():
-    # If logged in, go to dashboard, else show landing page
-    if 'username' in session:
-        return redirect(url_for('user_dashboard'))
-    if 'admin' in session:
-        return redirect(url_for('admin_dashboard'))
-    return render_template('index.html', movies=movies) # Pass movies to index for visibility
+    return render_template('index.html')
 
-@app.route('/about')
-def about():
-    return render_template('about.html')
+@app.route('/dashboard')
+def dashboard():
+    if 'username' not in session: return redirect(url_for('login'))
+    return render_template('dashboard.html', movies=movies, is_admin=session.get('is_admin'))
 
-# --- User Authentication ---
+# --- AUTHENTICATION LOGIC ---
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        if username in users:
-            return "User already exists!"
-        users[username] = password
-        bookings[username] = [] # Initialize empty booking list for new user
+        
+        # Check if user already exists
+        if username in users_db or username in admin_users:
+            return "Error: Username already exists! <a href='/signup'>Try again</a>"
+        
+        # Save new user to memory
+        users_db[username] = password
         return redirect(url_for('login'))
+        
     return render_template('signup.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    error = None
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        if username in users and users[username] == password:
-            session['username'] = username
-            return redirect(url_for('user_dashboard'))
-        return "Invalid credentials!"
-    return render_template('login.html')
+        user_input = request.form['username']
+        pass_input = request.form['password']
+        
+        # 1. Check if Admin
+        if user_input in admin_users and admin_users[user_input] == pass_input:
+            session['username'] = user_input
+            session['is_admin'] = True
+            return redirect(url_for('dashboard'))
+        
+        # 2. Check if Registered User
+        elif user_input in users_db and users_db[user_input] == pass_input:
+            session['username'] = user_input
+            session['is_admin'] = False
+            return redirect(url_for('dashboard'))
+            
+        # 3. Invalid Credentials
+        else:
+            error = "Invalid Username or Password. Please Sign Up first."
+
+    return render_template('login.html', error=error)
 
 @app.route('/logout')
 def logout():
-    session.pop('username', None)
+    session.clear()
     return redirect(url_for('index'))
 
-# --- User Features (Booking) ---
-@app.route('/dashboard')
-def user_dashboard():
-    if 'username' in session:
-        user_bookings = bookings.get(session['username'], [])
-        return render_template('home.html', username=session['username'], movies=movies, my_bookings=user_bookings)
-    return redirect(url_for('login'))
-
-@app.route('/book/<int:movie_id>', methods=['POST'])
-def book_ticket(movie_id):
-    if 'username' not in session:
-        return redirect(url_for('login'))
-    
-    # Simple booking logic
-    seat_count = int(request.form.get('seats', 1))
-    
-    # Find movie
-    for movie in movies:
-        if movie['id'] == movie_id:
-            if movie['slots'] >= seat_count:
-                movie['slots'] -= seat_count
-                
-                # Save booking
-                booking_details = {
-                    'movie_title': movie['title'], 
-                    'seats': seat_count, 
-                    'total_cost': seat_count * movie['price']
-                }
-                bookings[session['username']].append(booking_details)
-                return redirect(url_for('user_dashboard'))
-            else:
-                return "Not enough seats available!"
-    
-    return "Movie not found!"
-
-# --- Admin Authentication ---
-@app.route('/admin/signup', methods=['GET', 'POST'])
-def admin_signup():
+# --- ADMIN & BOOKING ROUTES ---
+@app.route('/admin/add', methods=['GET', 'POST'])
+def add_movie():
+    if not session.get('is_admin'): return "Access Denied", 403
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        if username in admin_users:
-            return "Admin already exists!"
-        admin_users[username] = password
-        return redirect(url_for('admin_login'))
-    return render_template('admin_signup.html')
+        new_movie = {
+            'id': len(movies) + 1,
+            'title': request.form['title'],
+            'genre': request.form['genre'],
+            'theaters': [t.strip() for t in request.form['theaters'].split(',')],
+            'time': request.form['time'],
+            'price': float(request.form['price'])
+        }
+        movies.append(new_movie)
+        return redirect(url_for('dashboard'))
+    return render_template('admin_add.html')
 
-@app.route('/admin/login', methods=['GET', 'POST'])
-def admin_login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        if username in admin_users and admin_users[username] == password:
-            session['admin'] = username
-            return redirect(url_for('admin_dashboard'))
-        return "Invalid admin credentials!"
-    return render_template('admin_login.html')
+@app.route('/book/<int:movie_id>')
+def book(movie_id):
+    if 'username' not in session: return redirect(url_for('login'))
+    movie = next((m for m in movies if m['id'] == movie_id), None)
+    return render_template('booking.html', movie=movie)
 
-@app.route('/admin/logout')
-def admin_logout():
-    session.pop('admin', None)
-    return redirect(url_for('index'))
+@app.route('/payment')
+def payment():
+    return render_template('payment.html', total=15.00, theater=request.args.get('theater'))
 
-# --- Admin Features (Manage Movies) ---
-@app.route('/admin/dashboard', methods=['GET', 'POST'])
-def admin_dashboard():
-    if 'admin' not in session:
-        return redirect(url_for('admin_login'))
-    
-    if request.method == 'POST':
-        # Add a new movie
-        title = request.form['title']
-        slots = int(request.form['slots'])
-        price = float(request.form['price'])
-        new_id = len(movies) + 1
-        
-        movies.append({
-            'id': new_id,
-            'title': title,
-            'slots': slots,
-            'price': price
-        })
-        
-    return render_template('admin_dashboard.html', username=session['admin'], movies=movies)
+@app.route('/success')
+def success():
+    return render_template('success.html')
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
