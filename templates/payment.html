@@ -7,15 +7,22 @@
         <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                 <span style="color: var(--text-muted);">Movie</span>
-                <strong>Interstellar Return</strong>
+                <strong>{{ movie_title }}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="color: var(--text-muted);">Location</span>
+                <strong>{{ theater }}</strong>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 1.2rem; margin-top: 1rem; color: var(--primary);">
                 <span>Total</span>
-                <strong>$30.00</strong>
+                <strong>${{ total }}</strong>
             </div>
         </div>
 
-        <form action="/success">
+        <form action="/payment" method="POST">
+            <input type="hidden" name="movie_title" value="{{ movie_title }}">
+            <input type="hidden" name="theater" value="{{ theater }}">
+
             <input type="text" placeholder="Cardholder Name" required style="width: 100%; padding: 1rem; margin-bottom: 1rem; background: #0f1014; border: 1px solid var(--border); border-radius: 6px; color: white;">
             <input type="text" placeholder="Card Number" required style="width: 100%; padding: 1rem; margin-bottom: 1rem; background: #0f1014; border: 1px solid var(--border); border-radius: 6px; color: white;">
             
@@ -24,7 +31,7 @@
                 <input type="password" placeholder="CVV" required style="flex:1; padding: 1rem; background: #0f1014; border: 1px solid var(--border); border-radius: 6px; color: white;">
             </div>
 
-            <button class="btn-primary" style="width: 100%; margin-top: 2rem;">Pay $30.00</button>
+            <button class="btn-primary" style="width: 100%; margin-top: 2rem;">Pay ${{ total }}</button>
         </form>
     </div>
 </div>

@@ -1,4 +1,4 @@
-/* MOVIE MAGIC - Final UI Theme */
+/* MOVIE MAGIC - Fully Updated Theme */
 :root {
     --primary: #e50914;       /* Cinema Red */
     --accent: #00cec9;        /* Tech Blue */
@@ -11,36 +11,15 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
 
-body {
-    background-color: var(--bg-dark);
-    color: var(--text-main);
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
+body { background-color: var(--bg-dark); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
 a { text-decoration: none; color: inherit; transition: 0.3s; }
 
 /* NAVBAR */
-.navbar {
-    background: rgba(15, 16, 20, 0.95);
-    padding: 1.2rem 5%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    backdrop-filter: blur(10px);
-}
-
+.navbar { background: rgba(15, 16, 20, 0.95); padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
 .nav-brand { font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; }
 .brand-magic { color: var(--primary); }
-
 .nav-links a { margin-left: 2rem; color: var(--text-muted); font-weight: 500; }
 .nav-links a:hover { color: var(--text-main); }
-
 .btn-nav { background: var(--border); padding: 0.5rem 1.2rem; border-radius: 50px; font-size: 0.9rem; }
 .btn-nav:hover { background: var(--primary); color: white; }
 
@@ -48,44 +27,25 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
 .hero { text-align: center; padding: 8rem 2rem; background: radial-gradient(circle at center, #2d3436 0%, #0f1014 70%); }
 .hero h1 { font-size: 4rem; line-height: 1.1; margin-bottom: 1.5rem; }
 .hero p { font-size: 1.25rem; color: var(--text-muted); max-width: 600px; margin: 0 auto 2.5rem auto; }
-
-.btn-primary {
-    background: var(--primary); color: white; padding: 1rem 3rem; border: none; border-radius: 8px;
-    font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4);
-}
+.btn-primary { background: var(--primary); color: white; padding: 1rem 3rem; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(229, 9, 20, 0.4); }
 .btn-primary:hover { transform: translateY(-3px); background: #f40612; }
 
 /* CARDS & CONTAINERS */
 .container { max-width: 1200px; margin: 0 auto; padding: 2rem; width: 100%; }
-
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; }
-
-.movie-card {
-    background: var(--bg-card); border-radius: 12px; overflow: hidden; transition: transform 0.3s; border: 1px solid var(--border);
-}
+.movie-card { background: var(--bg-card); border-radius: 12px; overflow: hidden; transition: transform 0.3s; border: 1px solid var(--border); }
 .movie-card:hover { transform: translateY(-10px); border-color: var(--text-muted); }
 .card-img { height: 180px; background: #333; display: flex; align-items: center; justify-content: center; font-size: 3rem; }
 .card-info { padding: 1.5rem; }
 .tag { font-size: 0.8rem; color: var(--accent); text-transform: uppercase; font-weight: bold; }
 .card-info h3 { margin: 0.5rem 0; font-size: 1.4rem; }
-.card-info p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
 
 /* AUTH FORMS */
-.auth-box {
-    max-width: 400px; margin: 4rem auto; background: var(--bg-card); padding: 3rem;
-    border-radius: 16px; text-align: center; border: 1px solid var(--border);
-}
-.auth-form input {
-    width: 100%; padding: 1rem; margin-bottom: 1rem; background: #0f1014;
-    border: 1px solid var(--border); border-radius: 8px; color: white;
-}
+.auth-box { max-width: 400px; margin: 4rem auto; background: var(--bg-card); padding: 3rem; border-radius: 16px; text-align: center; border: 1px solid var(--border); }
+.auth-form input { width: 100%; padding: 1rem; margin-bottom: 1rem; background: #0f1014; border: 1px solid var(--border); border-radius: 8px; color: white; }
 
 /* SEAT MAP */
-.screen {
-    background: linear-gradient(to bottom, var(--text-muted), transparent); height: 60px; width: 100%; margin-bottom: 3rem;
-    transform: perspective(300px) rotateX(-5deg); box-shadow: 0 20px 50px rgba(255,255,255,0.1);
-    border-radius: 10px; display: flex; align-items: center; justify-content: center; letter-spacing: 10px; font-weight: bold; color: rgba(255,255,255,0.3);
-}
+.screen { background: linear-gradient(to bottom, var(--text-muted), transparent); height: 60px; width: 100%; margin-bottom: 3rem; transform: perspective(300px) rotateX(-5deg); box-shadow: 0 20px 50px rgba(255,255,255,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; letter-spacing: 10px; font-weight: bold; color: rgba(255,255,255,0.3); }
 .seat-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; max-width: 500px; margin: 0 auto 2rem auto; }
 .seat-label { display: block; height: 35px; background: #2d3436; border-radius: 6px; cursor: pointer; transition: 0.2s; }
 input[type="checkbox"] { display: none; }
@@ -93,57 +53,14 @@ input:checked + .seat-label { background: var(--primary); box-shadow: 0 0 15px v
 
 /* --- MOBILE OPTIMIZATION --- */
 @media (max-width: 768px) {
-    /* Stack the navbar */
-    .navbar {
-        flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
-    }
-    
-    .nav-links {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    
-    .nav-links a {
-        margin-left: 0;
-        font-size: 0.9rem;
-    }
-
-    /* Adjust Hero Text */
-    .hero h1 {
-        font-size: 2.5rem;
-    }
-    
-    .hero {
-        padding: 4rem 1rem;
-    }
-
-    /* Make Forms Full Width */
-    .auth-box {
-        margin: 2rem 1rem;
-        padding: 1.5rem;
-    }
-
-    /* Adjust Movie Cards */
-    .grid {
-        grid-template-columns: 1fr; /* 1 card per row */
-        padding: 0 1rem;
-    }
-
-    /* Seat Grid Adjustment */
-    .seat-grid {
-        gap: 5px; /* Smaller gaps */
-    }
-    
-    .seat-label {
-        height: 30px; /* Smaller seats */
-    }
-    
-    /* Make buttons easier to tap */
-    button, .btn-primary, .btn-nav {
-        min-height: 44px; /* Finger-friendly size */
-    }
+    .navbar { flex-direction: column; gap: 1rem; padding: 1rem; }
+    .nav-links { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .nav-links a { margin-left: 0; font-size: 0.9rem; }
+    .hero h1 { font-size: 2.5rem; }
+    .hero { padding: 4rem 1rem; }
+    .auth-box { margin: 2rem 1rem; padding: 1.5rem; }
+    .grid { grid-template-columns: 1fr; padding: 0 1rem; }
+    .seat-grid { gap: 5px; }
+    .seat-label { height: 30px; }
+    button, .btn-primary, .btn-nav { min-height: 44px; }
 }

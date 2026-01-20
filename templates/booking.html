@@ -4,7 +4,9 @@
     <h2 style="margin-bottom: 0.5rem;">{{ movie.title }}</h2>
     <p style="color: var(--text-muted); margin-bottom: 2rem;">{{ movie.time }}</p>
 
-    <form action="/payment">
+    <form action="/payment" method="GET">
+        <input type="hidden" name="movie_title" value="{{ movie.title }}">
+
         <div style="max-width: 400px; margin: 0 auto 2rem auto; text-align: left;">
             <label style="color: var(--primary); font-weight: bold;">Select Theater:</label>
             <select name="theater" style="width: 100%; padding: 1rem; background: #1b1e23; color: white; border: 1px solid var(--border); border-radius: 8px; margin-top: 0.5rem;">

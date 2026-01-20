@@ -1,19 +1,24 @@
 from flask import Flask, render_template, session, redirect, url_for, request
+import datetime
 
 app = Flask(__name__)
-app.secret_key = 'movie_magic_secure'
+app.secret_key = 'movie_magic_secure_key'
 
-# --- 1. ADMIN CONFIG ---
+# --- 1. ADMIN CREDENTIALS ---
+# Login with these to see the "Add Movie" button
 admin_users = {
     'admin': 'password123',
     'thiru': 'mysecretpass'
 }
 
-# --- 2. USER DATABASE (Temporary Memory) ---
-# Stores registered users. Format: {'john': 'pass1', 'jane': 'pass2'}
+# --- 2. DATABASES (In-Memory Storage) ---
+# users_db stores registered users: {'username': 'password'}
 users_db = {} 
 
-# --- MOCK MOVIE DATA ---
+# bookings_db stores ticket history (Matches your ER Diagram "Bookings" entity)
+bookings_db = [] 
+
+# movies list (Matches your ER Diagram "Movies" entity)
 movies = [
     {
         'id': 1,
@@ -33,73 +38,75 @@ movies = [
     }
 ]
 
-# --- ROUTES ---
+# --- PUBLIC ROUTES ---
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# --- DASHBOARD & MOVIES ---
 @app.route('/dashboard')
 def dashboard():
     if 'username' not in session: return redirect(url_for('login'))
     return render_template('dashboard.html', movies=movies, is_admin=session.get('is_admin'))
 
-# --- AUTHENTICATION LOGIC ---
+@app.route('/book/<int:movie_id>')
+def book(movie_id):
+    if 'username' not in session: return redirect(url_for('login'))
+    # Find the specific movie by ID
+    movie = next((m for m in movies if m['id'] == movie_id), None)
+    return render_template('booking.html', movie=movie)
 
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
+# --- PAYMENT & BOOKING LOGIC ---
+@app.route('/payment', methods=['GET', 'POST'])
+def payment():
+    if 'username' not in session: return redirect(url_for('login'))
+
+    # STEP 2: SAVE BOOKING (When user clicks "Pay")
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        movie_title = request.form['movie_title']
+        theater = request.form['theater']
         
-        # Check if user already exists
-        if username in users_db or username in admin_users:
-            return "Error: Username already exists! <a href='/signup'>Try again</a>"
-        
-        # Save new user to memory
-        users_db[username] = password
-        return redirect(url_for('login'))
-        
-    return render_template('signup.html')
+        # Create a new booking record (ER Diagram Logic)
+        new_booking = {
+            'booking_id': len(bookings_db) + 1,
+            'username': session['username'],
+            'movie': movie_title,
+            'theater': theater,
+            'seats': 'A4, A5', # Placeholder (Future: get from form)
+            'date': datetime.date.today().strftime("%Y-%m-%d"),
+            'price': 15.00
+        }
+        bookings_db.append(new_booking) # Save to database
+        return redirect(url_for('success'))
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    error = None
-    if request.method == 'POST':
-        user_input = request.form['username']
-        pass_input = request.form['password']
-        
-        # 1. Check if Admin
-        if user_input in admin_users and admin_users[user_input] == pass_input:
-            session['username'] = user_input
-            session['is_admin'] = True
-            return redirect(url_for('dashboard'))
-        
-        # 2. Check if Registered User
-        elif user_input in users_db and users_db[user_input] == pass_input:
-            session['username'] = user_input
-            session['is_admin'] = False
-            return redirect(url_for('dashboard'))
-            
-        # 3. Invalid Credentials
-        else:
-            error = "Invalid Username or Password. Please Sign Up first."
+    # STEP 1: SHOW PAYMENT PAGE (Get details from Booking page)
+    movie_title = request.args.get('movie_title')
+    theater = request.args.get('theater')
+    return render_template('payment.html', total=15.00, movie_title=movie_title, theater=theater)
 
-    return render_template('login.html', error=error)
+@app.route('/success')
+def success():
+    return render_template('success.html')
 
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('index'))
+@app.route('/my_tickets')
+def my_tickets():
+    if 'username' not in session: return redirect(url_for('login'))
+    # Filter: Show only this user's tickets
+    user_bookings = [b for b in bookings_db if b['username'] == session['username']]
+    return render_template('my_tickets.html', bookings=user_bookings)
 
-# --- ADMIN & BOOKING ROUTES ---
+# --- ADMIN ROUTES ---
 @app.route('/admin/add', methods=['GET', 'POST'])
 def add_movie():
+    # Security Check
     if not session.get('is_admin'): return "Access Denied", 403
+
     if request.method == 'POST':
         new_movie = {
             'id': len(movies) + 1,
             'title': request.form['title'],
             'genre': request.form['genre'],
+            # Split comma-separated string into a list
             'theaters': [t.strip() for t in request.form['theaters'].split(',')],
             'time': request.form['time'],
             'price': float(request.form['price'])
@@ -108,19 +115,43 @@ def add_movie():
         return redirect(url_for('dashboard'))
     return render_template('admin_add.html')
 
-@app.route('/book/<int:movie_id>')
-def book(movie_id):
-    if 'username' not in session: return redirect(url_for('login'))
-    movie = next((m for m in movies if m['id'] == movie_id), None)
-    return render_template('booking.html', movie=movie)
+# --- AUTHENTICATION ---
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username in users_db:
+            return "User exists!"
+        users_db[username] = password
+        return redirect(url_for('login'))
+    return render_template('signup.html')
 
-@app.route('/payment')
-def payment():
-    return render_template('payment.html', total=15.00, theater=request.args.get('theater'))
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        user = request.form['username']
+        pw = request.form['password']
+        
+        # Check Admin
+        if user in admin_users and admin_users[user] == pw:
+            session['username'] = user
+            session['is_admin'] = True
+            return redirect(url_for('dashboard'))
+        
+        # Check Regular User
+        elif user in users_db and users_db[user] == pw:
+            session['username'] = user
+            session['is_admin'] = False
+            return redirect(url_for('dashboard'))
+            
+    return render_template('login.html')
 
-@app.route('/success')
-def success():
-    return render_template('success.html')
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
+    # host='0.0.0.0' allows mobile phones on the same Wi-Fi to connect
     app.run(debug=True, host='0.0.0.0', port=5000)
