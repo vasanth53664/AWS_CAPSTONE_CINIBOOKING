@@ -2,14 +2,12 @@
 {% block content %}
 <div class="container">
     <h2 style="margin-bottom: 2rem;">My Ticket History</h2>
-    
     {% if bookings %}
         <div class="grid">
             {% for ticket in bookings %}
             <div class="movie-card" style="border-left: 4px solid var(--accent);">
                 <div class="card-info">
-                    <span class="tag">Booking #{{ ticket.booking_id }}</span>
-                    <h3 style="margin-top: 0.5rem;">{{ ticket.movie }}</h3>
+                    <h3 style="margin-top: 0.5rem;">{{ ticket.movie_title }}</h3>
                     <p style="color: var(--text-main);">📍 {{ ticket.theater }}</p>
                     <p style="font-size: 0.9rem; color: var(--text-muted);">
                         Seats: {{ ticket.seats }} <br>
@@ -25,7 +23,7 @@
     {% else %}
         <div style="text-align: center; padding: 4rem; background: var(--bg-card); border-radius: 12px;">
             <p style="font-size: 1.5rem; color: var(--text-muted);">No tickets booked yet.</p>
-            <a href="/dashboard"><button class="btn-primary" style="margin-top: 1rem;">Browse Movies</button></a>
+            <a href="/dashboard"><button class="btn-primary" style="margin-top: 1rem; width: auto;">Browse Movies</button></a>
         </div>
     {% endif %}
 </div>

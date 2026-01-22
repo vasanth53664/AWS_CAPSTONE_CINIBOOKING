@@ -8,12 +8,12 @@
 </head>
 <body>
     <nav class="navbar">
-        <div class="nav-brand">Movie<span class="brand-magic">Magic</span></div>
+        <div class="nav-brand">Movie<span style="color:white">Magic</span></div>
         <div class="nav-links">
             <a href="/">Home</a>
             {% if session.get('username') %}
                 <a href="/dashboard">Movies</a>
-                <a href="{{ url_for('my_tickets') }}" class="btn-nav">My Tickets</a>
+                <a href="/my_tickets">My Tickets</a>
                 <a href="/logout">Logout</a>
             {% else %}
                 <a href="/login">Login</a>

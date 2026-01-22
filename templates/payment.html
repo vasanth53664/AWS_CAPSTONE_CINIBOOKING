@@ -1,38 +1,61 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container">
-    <div class="auth-box" style="max-width: 600px; text-align: left;">
-        <h2 style="margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">Checkout</h2>
+    <div class="auth-box" style="max-width: 600px; padding: 2rem;">
+        <h2 style="margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Checkout</h2>
         
-        <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                <span style="color: var(--text-muted);">Movie</span>
-                <strong>{{ movie_title }}</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                <span style="color: var(--text-muted);">Location</span>
-                <strong>{{ theater }}</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; font-size: 1.2rem; margin-top: 1rem; color: var(--primary);">
-                <span>Total</span>
-                <strong>${{ total }}</strong>
-            </div>
+        {% if error %}
+        <div style="background: rgba(229, 9, 20, 0.2); color: #ff6b6b; padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+            ⚠️ {{ error }}
+        </div>
+        {% endif %}
+
+        <div style="background: #222; padding: 1rem; border-radius: 4px; margin-bottom: 2rem;">
+            <p style="display:flex; justify-content:space-between;"><span>Movie</span> <span>{{ movie_title }}</span></p>
+            <p style="display:flex; justify-content:space-between;"><span>Seats</span> <span>{{ seats|join(', ') }}</span></p>
+            <hr style="border:0; border-top:1px solid #333; margin:1rem 0;">
+            <p style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.2rem;">
+                <span>Total</span> <span style="color:var(--primary)">${{ total }}</span>
+            </p>
         </div>
 
         <form action="/payment" method="POST">
             <input type="hidden" name="movie_title" value="{{ movie_title }}">
             <input type="hidden" name="theater" value="{{ theater }}">
+            <input type="hidden" name="total_price" value="{{ total }}">
+            {% for seat in seats %}<input type="hidden" name="seats" value="{{ seat }}">{% endfor %}
 
-            <input type="text" placeholder="Cardholder Name" required style="width: 100%; padding: 1rem; margin-bottom: 1rem; background: #0f1014; border: 1px solid var(--border); border-radius: 6px; color: white;">
-            <input type="text" placeholder="Card Number" required style="width: 100%; padding: 1rem; margin-bottom: 1rem; background: #0f1014; border: 1px solid var(--border); border-radius: 6px; color: white;">
-            
-            <div style="display: flex; gap: 1rem;">
-                <input type="text" placeholder="MM/YY" required style="flex:1; padding: 1rem; background: #0f1014; border: 1px solid var(--border); border-radius: 6px; color: white;">
-                <input type="password" placeholder="CVV" required style="flex:1; padding: 1rem; background: #0f1014; border: 1px solid var(--border); border-radius: 6px; color: white;">
+            <div style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
+                <label class="pay-tab active">
+                    <input type="radio" name="payment_method" value="card" checked onclick="togglePayment('card')"> Card
+                </label>
+                <label class="pay-tab">
+                    <input type="radio" name="payment_method" value="upi" onclick="togglePayment('upi')"> UPI
+                </label>
             </div>
 
-            <button class="btn-primary" style="width: 100%; margin-top: 2rem;">Pay ${{ total }}</button>
+            <div id="card-section">
+                <input type="text" name="card_number" placeholder="Card Number (Luhn Validated)">
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" name="expiry" placeholder="MM/YY">
+                    <input type="password" name="cvv" placeholder="CVV" maxlength="3">
+                </div>
+            </div>
+
+            <div id="upi-section" style="display: none;">
+                <input type="text" name="upi_id" placeholder="name@bank">
+            </div>
+
+            <button class="btn-primary" style="margin-top: 1rem;">Complete Payment</button>
         </form>
     </div>
 </div>
+<script>
+    function togglePayment(method) {
+        document.getElementById('card-section').style.display = method === 'card' ? 'block' : 'none';
+        document.getElementById('upi-section').style.display = method === 'upi' ? 'block' : 'none';
+        document.querySelectorAll('.pay-tab').forEach(el => el.classList.remove('active'));
+        event.target.parentElement.classList.add('active');
+    }
+</script>
 {% endblock %}

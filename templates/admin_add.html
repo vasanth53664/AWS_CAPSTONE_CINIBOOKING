@@ -3,29 +3,18 @@
 <div class="container">
     <div class="auth-box" style="text-align: left; max-width: 500px;">
         <h2 style="margin-bottom: 2rem;">Add New Movie</h2>
-        
         <form action="/admin/add" method="POST">
-            <label style="color: var(--text-muted);">Movie Title</label>
-            <input type="text" name="title" required style="width: 100%; padding: 0.8rem; margin-bottom: 1rem; background: #0f1014; border: 1px solid var(--border); color: white; border-radius: 6px;">
-
+            <label style="color: var(--text-muted);">Title</label>
+            <input type="text" name="title" required>
             <label style="color: var(--text-muted);">Genre</label>
-            <input type="text" name="genre" required style="width: 100%; padding: 0.8rem; margin-bottom: 1rem; background: #0f1014; border: 1px solid var(--border); color: white; border-radius: 6px;">
-
-            <label style="color: var(--accent);">Theaters (Comma Separated)</label>
-            <input type="text" name="theaters" placeholder="IMAX, PVR, Luxe" required style="width: 100%; padding: 0.8rem; margin-bottom: 1rem; background: #0f1014; border: 1px solid var(--border); color: white; border-radius: 6px;">
-
+            <input type="text" name="genre" required>
+            <label style="color: var(--text-muted);">Theaters (Comma Separated)</label>
+            <input type="text" name="theaters" placeholder="IMAX, PVR" required>
             <div style="display: flex; gap: 1rem;">
-                <div style="flex: 1;">
-                    <label style="color: var(--text-muted);">Time</label>
-                    <input type="text" name="time" required style="width: 100%; padding: 0.8rem; background: #0f1014; border: 1px solid var(--border); color: white; border-radius: 6px;">
-                </div>
-                <div style="flex: 1;">
-                    <label style="color: var(--text-muted);">Price ($)</label>
-                    <input type="number" name="price" step="0.01" required style="width: 100%; padding: 0.8rem; background: #0f1014; border: 1px solid var(--border); color: white; border-radius: 6px;">
-                </div>
+                <div style="flex: 1;"><label style="color: var(--text-muted);">Time</label><input type="text" name="time" required></div>
+                <div style="flex: 1;"><label style="color: var(--text-muted);">Price ($)</label><input type="number" name="price" step="0.01" required></div>
             </div>
-
-            <button class="btn-primary" style="width: 100%; margin-top: 2rem;">Add to Dashboard</button>
+            <button class="btn-primary" style="margin-top: 2rem;">Add Movie</button>
         </form>
     </div>
 </div>
