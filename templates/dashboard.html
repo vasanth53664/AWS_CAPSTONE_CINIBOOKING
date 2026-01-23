@@ -1,12 +1,39 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    
+    {% if is_admin and analytics %}
+    <div style="display: flex; gap: 1rem; margin-bottom: 3rem; flex-wrap: wrap;">
+        <div style="flex:1; background: #222; padding: 1.5rem; border-radius: 8px; border-top: 4px solid var(--primary);">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Total Revenue</p>
+            <h2 style="font-size: 2rem;">{{ analytics.revenue }}</h2>
+        </div>
+        <div style="flex:1; background: #222; padding: 1.5rem; border-radius: 8px; border-top: 4px solid var(--accent);">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Tickets Sold</p>
+            <h2 style="font-size: 2rem;">{{ analytics.tickets }}</h2>
+        </div>
+        <div style="flex:1; background: #222; padding: 1.5rem; border-radius: 8px; border-top: 4px solid white;">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Top Movie</p>
+            <h2 style="font-size: 1.5rem;">{{ analytics.top_movie }}</h2>
+        </div>
+    </div>
+    {% endif %}
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h2>Now Showing</h2>
         {% if is_admin %}
-        <a href="/admin/add"><button class="btn-primary" style="width: auto;">+ Add Movie</button></a>
+        <a href="/admin/add"><button class="btn-primary" style="width: auto; padding: 0.5rem 1rem;">+ Add Movie</button></a>
         {% endif %}
     </div>
+
+    <form action="/dashboard" method="GET" style="margin-bottom: 2rem; display: flex; gap: 10px;">
+        <input type="text" name="q" placeholder="Search by title or genre..." value="{{ request.args.get('q', '') }}" style="padding: 1rem; border-radius: 50px; background: #222; border: 1px solid #333; flex: 1; color: white;">
+        <button class="btn-primary" style="width: auto; border-radius: 50px; padding: 0 2rem;">Search</button>
+        {% if request.args.get('q') %}
+        <a href="/dashboard"><button type="button" style="background: #333; color: white; border: none; padding: 0 1.5rem; border-radius: 50px; height: 100%; cursor: pointer;">Clear</button></a>
+        {% endif %}
+    </form>
+
     <div class="grid">
         {% for movie in movies %}
         <div class="movie-card">
@@ -22,7 +49,9 @@
             </div>
         </div>
         {% else %}
-        <p>No movies available.</p>
+        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; color: var(--text-muted);">
+            <p style="font-size: 1.5rem;">😕 No movies found.</p>
+        </div>
         {% endfor %}
     </div>
 </div>

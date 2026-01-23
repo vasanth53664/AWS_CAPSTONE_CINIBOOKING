@@ -15,29 +15,30 @@ a { text-decoration: none; color: inherit; transition: 0.2s; }
 .nav-links a:hover { color: white; }
 .btn-nav { background: var(--primary); color: white !important; padding: 0.5rem 1rem; border-radius: 4px; }
 
-/* LAYOUT */
-.container { max-width: 1100px; margin: 0 auto; padding: 2rem; width: 100%; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 2rem; }
-.auth-box { max-width: 400px; margin: 4rem auto; background: rgba(0,0,0,0.75); padding: 3rem; border-radius: 8px; border: 1px solid var(--border); }
+/* HERO - FIXED */
+.hero { text-align: center; padding: 8rem 2rem; background: radial-gradient(circle at center, #1f1f1f 0%, #0f1014 100%); min-height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.hero h1 { font-size: 3.5rem; line-height: 1.2; margin-bottom: 1.5rem; max-width: 800px; }
+.hero p { font-size: 1.25rem; color: var(--text-muted); max-width: 600px; margin-bottom: 3rem; }
 
-/* ELEMENTS */
-.btn-primary { background: var(--primary); color: white; padding: 0.8rem 2rem; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; }
+/* BUTTONS - FIXED */
+.btn-primary { background: var(--primary); color: white; padding: 0.8rem 2rem; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; display: inline-block; width: auto; }
 .btn-primary:hover { background: var(--primary-hover); transform: translateY(-2px); }
-input, select { width: 100%; padding: 1rem; margin-bottom: 1rem; background: #333; border: none; border-radius: 4px; color: white; }
-input:focus { outline: 2px solid var(--primary); background: #444; }
+/* Only expand buttons in forms */
+form .btn-primary { width: 100%; }
 
-/* CARDS */
-.movie-card { background: var(--bg-card); border-radius: 8px; overflow: hidden; transition: transform 0.2s; border: 1px solid transparent; }
+/* GRID & CARDS */
+.container { max-width: 1100px; margin: 0 auto; padding: 2rem; width: 100%; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem; }
+.movie-card { background: var(--bg-card); border-radius: 8px; overflow: hidden; transition: transform 0.2s; border: 1px solid transparent; display: flex; flex-direction: column; }
 .movie-card:hover { transform: scale(1.02); border-color: var(--border); }
 .card-img { height: 160px; background: #222; display: flex; align-items: center; justify-content: center; font-size: 3rem; }
-.card-info { padding: 1.2rem; }
-.tag { font-size: 0.7rem; color: var(--accent); border: 1px solid var(--accent); padding: 2px 6px; border-radius: 4px; }
+.card-info { padding: 1.2rem; flex: 1; display: flex; flex-direction: column; }
+.tag { font-size: 0.7rem; color: var(--accent); border: 1px solid var(--accent); padding: 2px 6px; border-radius: 4px; align-self: flex-start; }
 
-/* HERO */
-.hero { text-align: center; padding: 10rem 2rem; background: radial-gradient(circle at center, #1f1f1f 0%, #0f1014 100%); min-height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.hero h1 { font-size: 4rem; line-height: 1.2; margin-bottom: 1.5rem; max-width: 800px; }
-.hero p { font-size: 1.25rem; color: var(--text-muted); max-width: 600px; margin-bottom: 3rem; }
-.hero .btn-primary { display: inline-block; width: auto; }
+/* FORMS */
+.auth-box { max-width: 400px; margin: 4rem auto; background: rgba(0,0,0,0.75); padding: 3rem; border-radius: 8px; border: 1px solid var(--border); }
+input, select { width: 100%; padding: 1rem; margin-bottom: 1rem; background: #333; border: none; border-radius: 4px; color: white; }
+input:focus { outline: 2px solid var(--primary); background: #444; }
 
 /* SEATS */
 .screen { background: linear-gradient(180deg, rgba(255,255,255,0.2), transparent); height: 40px; width: 80%; margin: 0 auto 3rem auto; border-radius: 50% 50% 0 0 / 20px; }
@@ -52,9 +53,5 @@ input:checked + .seat-label { background: var(--primary); box-shadow: 0 0 10px v
 .pay-tab input { display: none; }
 .pay-tab.active { background: var(--bg-card); border-bottom: 4px solid var(--primary); color: white; }
 
-@media (max-width: 768px) {
-    .navbar { flex-direction: column; gap: 10px; padding: 1rem; }
-    .grid { grid-template-columns: 1fr; }
-    .hero { padding: 4rem 1rem; }
-    .hero h1 { font-size: 2.5rem; }
-}
+/* MOBILE */
+@media (max-width: 768px) { .grid { grid-template-columns: 1fr; } .navbar { flex-direction: column; gap: 1rem; } }

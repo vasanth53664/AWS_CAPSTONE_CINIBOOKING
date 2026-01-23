@@ -13,24 +13,16 @@
                         Seats: <span style="color: var(--primary); font-weight: bold;">{{ ticket.seats }}</span> <br>
                         Date: {{ ticket.date }}
                     </p>
-                    
                     <div style="background: white; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 1rem;">
                         <img src="data:image/png;base64,{{ ticket.qr_code }}" alt="Ticket QR" style="width: 120px; height: 120px;">
-                        <p style="color: black; font-size: 0.7rem; margin-top: 5px; font-weight: bold; letter-spacing: 1px;">SCAN AT ENTRY</p>
+                        <p style="color: black; font-size: 0.7rem; margin-top: 5px; font-weight: bold;">SCAN AT ENTRY</p>
                     </div>
-
-                    <button style="width:100%; padding:0.5rem; background:rgba(0, 206, 201, 0.2); color:var(--accent); border:none; border-radius:6px;">
-                        Confirmed ✅
-                    </button>
                 </div>
             </div>
             {% endfor %}
         </div>
     {% else %}
-        <div style="text-align: center; padding: 4rem; background: var(--bg-card); border-radius: 12px;">
-            <p style="font-size: 1.5rem; color: var(--text-muted);">No tickets booked yet.</p>
-            <a href="/dashboard"><button class="btn-primary" style="margin-top: 1rem; width: auto;">Browse Movies</button></a>
-        </div>
+        <p style="text-align: center; padding: 4rem; color: var(--text-muted);">No tickets booked yet.</p>
     {% endif %}
 </div>
 {% endblock %}

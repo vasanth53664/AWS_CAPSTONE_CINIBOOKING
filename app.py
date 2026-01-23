@@ -8,11 +8,11 @@ from flask import Flask, render_template, session, redirect, url_for, request
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # --- CONFIGURATION SWITCH ---
-# False = Runs on your laptop (RAM). True = Runs on AWS (DynamoDB).
+# Set False for Local Testing. Set True for AWS Deployment.
 USE_AWS = False 
 
 app = Flask(__name__)
-app.secret_key = 'movie_magic_qr_edition'
+app.secret_key = 'movie_magic_ultimate_edition'
 
 # --- 1. AWS SETUP ---
 if USE_AWS:
@@ -23,9 +23,8 @@ if USE_AWS:
     movies_table = dynamodb.Table('MovieMagic_Movies')
     bookings_table = dynamodb.Table('MovieMagic_Bookings')
     print("✅ RUNNING IN AWS MODE")
-
-# --- 2. LOCAL SETUP ---
 else:
+    # Local Data Storage
     local_users = {} 
     local_bookings = []
     local_movies = [
@@ -42,47 +41,45 @@ else:
 
 admin_users = {'admin': 'password123', 'thiru': 'mysecretpass'}
 
-# --- QR CODE GENERATOR ---
+# --- HELPER FUNCTIONS ---
+
 def generate_qr(data):
-    """Creates a QR code and returns it as a Base64 string for HTML"""
+    """Generates QR Code as Base64 String"""
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
     qr.add_data(data)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
-    
     buffered = BytesIO()
     img.save(buffered)
     return b64encode(buffered.getvalue()).decode("utf-8")
 
-# --- VALIDATION HELPERS ---
-def is_strong_password(password):
-    if len(password) < 8: return False, "Password must be 8+ chars."
-    if not re.search(r"\d", password): return False, "Password must have a number."
-    if not re.search(r"[!@#$%^&*]", password): return False, "Password must have a special symbol."
-    return True, None
-
-def is_valid_contact(email, mobile):
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", email): return False, "Invalid Email."
-    if not re.match(r"^\d{10}$", mobile): return False, "Mobile must be 10 digits."
-    return True, None
-
-def is_valid_luhn(card_number):
-    card_number = card_number.replace(" ", "")
-    if not card_number.isdigit(): return False
-    total = 0; reverse = card_number[::-1]
-    for i, digit in enumerate(reverse):
-        n = int(digit)
-        if i % 2 == 1: n *= 2
-        if n > 9: n -= 9
-        total += n
-    return total % 10 == 0
-
-# --- DATABASE HELPERS ---
 def get_all_movies():
     if USE_AWS:
         try: return movies_table.scan().get('Items', [])
         except: return []
     else: return local_movies
+
+def get_analytics():
+    """Calculates Revenue and Sales for Admin"""
+    source = []
+    if USE_AWS:
+        try: source = bookings_table.scan().get('Items', [])
+        except: pass
+    else: source = local_bookings
+    
+    total_rev = sum(float(b['price']) for b in source)
+    total_tix = len(source)
+    
+    # Count per movie
+    counts = {}
+    for b in source:
+        t = b['movie_title']
+        counts[t] = counts.get(t, 0) + 1
+    
+    # Find top movie
+    top_movie = max(counts, key=counts.get) if counts else "None"
+    
+    return {'revenue': f"${total_rev:,.2f}", 'tickets': total_tix, 'top_movie': top_movie}
 
 def get_occupied_seats(movie_title):
     occupied = []
@@ -99,7 +96,6 @@ def get_occupied_seats(movie_title):
 
 def create_user(data):
     u = data['username']
-    # Hash Password
     p = generate_password_hash(data['password'])
     record = {'username': u, 'password': p, 'email': data['email'], 'mobile': data['mobile']}
     
@@ -148,53 +144,80 @@ def get_user_history_with_qr(username):
         except: pass
     else: source = local_bookings
     
-    # Filter for user
     user_bookings = [b for b in source if b['username'] == username]
-    
-    # Add QR Code to each ticket
     for ticket in user_bookings:
-        qr_text = f"ID: {ticket['booking_id']} | Movie: {ticket['movie_title']} | Seats: {ticket['seats']}"
+        qr_text = f"ID:{ticket['booking_id']}|Movie:{ticket['movie_title']}|Seats:{ticket['seats']}"
         ticket['qr_code'] = generate_qr(qr_text)
-        
     return user_bookings
 
+# --- VALIDATORS ---
+def is_strong_password(p):
+    if len(p)<8 or not re.search(r"\d", p) or not re.search(r"[!@#$%^&*]", p): return False
+    return True
+
+def is_valid_contact(e, m):
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", e) or not re.match(r"^\d{10}$", m): return False
+    return True
+
+def is_valid_luhn(n):
+    n = n.replace(" ", "")
+    if not n.isdigit(): return False
+    t=0; r=n[::-1]
+    for i,d in enumerate(r):
+        x=int(d)
+        if i%2==1: x*=2; 
+        if x>9: x-=9
+        t+=x
+    return t%10==0
+
 # --- ROUTES ---
+
 @app.route('/')
 def index(): return render_template('index.html')
 
 @app.route('/dashboard')
 def dashboard():
     if 'username' not in session: return redirect(url_for('login'))
+    
     movies = get_all_movies()
+    
+    # SEARCH LOGIC
+    query = request.args.get('q')
+    if query:
+        q = query.lower()
+        movies = [m for m in movies if q in m['title'].lower() or q in m['genre'].lower()]
+    
     movies.sort(key=lambda x: x.get('title'))
-    return render_template('dashboard.html', movies=movies, is_admin=session.get('is_admin'))
+    
+    # ANALYTICS (If Admin)
+    analytics = get_analytics() if session.get('is_admin') else None
+    
+    return render_template('dashboard.html', movies=movies, is_admin=session.get('is_admin'), analytics=analytics)
 
 @app.route('/book/<movie_id>')
 def book(movie_id):
     if 'username' not in session: return redirect(url_for('login'))
     movie = next((m for m in get_all_movies() if str(m['movie_id']) == str(movie_id)), None)
-    if not movie: return "Movie Not Found", 404
+    if not movie: return "Not Found", 404
     return render_template('booking.html', movie=movie, occupied_seats=get_occupied_seats(movie['title']))
 
 @app.route('/payment', methods=['GET', 'POST'])
 def payment():
     if 'username' not in session: return redirect(url_for('login'))
     if request.method == 'POST':
-        data = request.form
-        error = None
-        if data['payment_method'] == 'card':
-            if not is_valid_luhn(data['card_number']): error = "Invalid Card Number"
-            elif not re.match(r'^\d{3}$', data['cvv']): error = "Invalid CVV"
-        elif data['payment_method'] == 'upi':
-            if '@' not in data['upi_id']: error = "Invalid UPI ID"
-            
-        if error:
-            return render_template('payment.html', movie_title=data['movie_title'], theater=data['theater'], 
-                                   seats=data.getlist('seats'), total=data['total_price'], error=error)
-        save_booking(data)
+        d = request.form
+        err = None
+        if d['payment_method'] == 'card':
+            if not is_valid_luhn(d['card_number']): err="Invalid Card"
+            elif not re.match(r'^\d{3}$', d['cvv']): err="Invalid CVV"
+        elif d['payment_method'] == 'upi':
+            if '@' not in d['upi_id']: err="Invalid UPI"
+        
+        if err: return render_template('payment.html', movie_title=d['movie_title'], theater=d['theater'], 
+                                       seats=d.getlist('seats'), total=d['total_price'], error=err)
+        save_booking(d)
         return redirect(url_for('success'))
 
-    # GET
     seats = request.args.getlist('seats')
     if not seats: return redirect(url_for('dashboard'))
     total = len(seats) * float(request.args.get('price', 0))
@@ -207,38 +230,31 @@ def success(): return render_template('success.html')
 @app.route('/my_tickets')
 def my_tickets():
     if 'username' not in session: return redirect(url_for('login'))
-    # Fetch tickets AND generate QR codes
-    bookings = get_user_history_with_qr(session['username'])
-    return render_template('my_tickets.html', bookings=bookings)
+    return render_template('my_tickets.html', bookings=get_user_history_with_qr(session['username']))
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        # Validations
-        is_strong, msg = is_strong_password(request.form['password'])
-        if not is_strong: return render_template('signup.html', error=msg)
-        
-        is_valid, msg = is_valid_contact(request.form['email'], request.form['mobile'])
-        if not is_valid: return render_template('signup.html', error=msg)
-        
+        if not is_strong_password(request.form['password']): return render_template('signup.html', error="Weak Password")
+        if not is_valid_contact(request.form['email'], request.form['mobile']): return render_template('signup.html', error="Invalid Contact")
         if create_user(request.form): return redirect(url_for('login'))
-        return render_template('signup.html', error="Username taken!")
+        return render_template('signup.html', error="User Exists")
     return render_template('signup.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        success, is_admin = check_login(request.form['username'], request.form['password'])
-        if success:
+        suc, admin = check_login(request.form['username'], request.form['password'])
+        if suc:
             session['username'] = request.form['username']
-            session['is_admin'] = is_admin
+            session['is_admin'] = admin
             return redirect(url_for('dashboard'))
-        return render_template('login.html', error="Invalid Credentials")
+        return render_template('login.html', error="Invalid Login")
     return render_template('login.html')
 
 @app.route('/admin/add', methods=['GET', 'POST'])
 def add_movie():
-    if not session.get('is_admin'): return "Access Denied", 403
+    if not session.get('is_admin'): return "Denied", 403
     if request.method == 'POST':
         d = request.form
         m = {'movie_id': str(uuid.uuid4()), 'title': d['title'], 'genre': d['genre'], 
