@@ -52,7 +52,6 @@ input:checked + .seat-label { background: var(--primary); box-shadow: 0 0 10px v
 .pay-tab input { display: none; }
 .pay-tab.active { background: var(--bg-card); border-bottom: 4px solid var(--primary); color: white; }
 
-/* MOBILE */
 @media (max-width: 768px) {
     .navbar { flex-direction: column; gap: 10px; padding: 1rem; }
     .grid { grid-template-columns: 1fr; }
