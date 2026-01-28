@@ -8,43 +8,53 @@ from flask import Flask, render_template, session, redirect, url_for, request
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # --- CONFIGURATION SWITCH ---
-# Set False for Local Testing. Set True for AWS Deployment.
-USE_AWS = False 
+# CHANGE THIS TO 'True' WHEN DEPLOYING TO AWS EC2
+USE_AWS = True 
+REGION = 'ap-south-1'
 
 app = Flask(__name__)
-app.secret_key = 'movie_magic_ultimate_edition'
+app.secret_key = 'movie_magic_sns_edition'
 
-# --- 1. AWS SETUP ---
+# --- 1. AWS RESOURCES ---
 if USE_AWS:
     import boto3
-    from botocore.exceptions import ClientError
-    dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+    # DynamoDB Setup
+    dynamodb = boto3.resource('dynamodb', region_name=REGION)
     users_table = dynamodb.Table('MovieMagic_Users')
     movies_table = dynamodb.Table('MovieMagic_Movies')
     bookings_table = dynamodb.Table('MovieMagic_Bookings')
-    print("✅ RUNNING IN AWS MODE")
+    
+    # SNS Setup (For SMS)
+    sns_client = boto3.client('sns', region_name=REGION)
+    print("✅ RUNNING IN AWS MODE (DB + SNS)")
 else:
     # Local Data Storage
     local_users = {} 
     local_bookings = []
     local_movies = [
-        {
-            'movie_id': '1', 'title': 'Interstellar Return', 'genre': 'Sci-Fi',
-            'theaters': ['IMAX City Center', 'PVR Grand Mall'], 'time': '7:00 PM', 'price': '15.00'
-        },
-        {
-            'movie_id': '2', 'title': 'The Cyberpunk Era', 'genre': 'Action',
-            'theaters': ['PVR Grand Mall', 'Inox Forum'], 'time': '9:30 PM', 'price': '12.50'
-        }
+        {'movie_id': '1', 'title': 'Interstellar Return', 'genre': 'Sci-Fi', 'theaters': ['IMAX City'], 'time': '7:00 PM', 'price': '15.00'},
+        {'movie_id': '2', 'title': 'The Cyberpunk Era', 'genre': 'Action', 'theaters': ['PVR Grand'], 'time': '9:30 PM', 'price': '12.50'}
     ]
     print("💻 RUNNING IN LOCAL MODE")
 
-admin_users = {'admin': 'password123', 'thiru': 'mysecretpass'}
+admin_users = {'admin': 'password123'}
 
-# --- HELPER FUNCTIONS ---
+# --- 2. HELPER FUNCTIONS ---
+
+def send_sms(mobile, message):
+    """Sends SMS via AWS SNS if in Cloud Mode, otherwise prints to console."""
+    if USE_AWS:
+        try:
+            # AWS requires E.164 format (e.g., +919999999999)
+            phone_number = mobile if mobile.startswith('+') else f"+91{mobile}" 
+            sns_client.publish(PhoneNumber=phone_number, Message=f"MovieMagic: {message}")
+            print(f"📲 SMS sent to {phone_number}")
+        except Exception as e:
+            print(f"❌ SMS Failed: {e}")
+    else:
+        print(f"\n[LOCAL SMS SIMULATION] To: {mobile} | Msg: {message}\n")
 
 def generate_qr(data):
-    """Generates QR Code as Base64 String"""
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
     qr.add_data(data)
     qr.make(fit=True)
@@ -70,13 +80,10 @@ def get_analytics():
     total_rev = sum(float(b['price']) for b in source)
     total_tix = len(source)
     
-    # Count per movie
     counts = {}
     for b in source:
         t = b['movie_title']
         counts[t] = counts.get(t, 0) + 1
-    
-    # Find top movie
     top_movie = max(counts, key=counts.get) if counts else "None"
     
     return {'revenue': f"${total_rev:,.2f}", 'tickets': total_tix, 'top_movie': top_movie}
@@ -107,6 +114,9 @@ def create_user(data):
     else:
         if u in local_users: return False
         local_users[u] = record
+    
+    # Send Welcome SMS
+    send_sms(data['mobile'], f"Welcome {u}! Your MovieMagic account is ready.")
     return True
 
 def check_login(u, p):
@@ -124,8 +134,9 @@ def check_login(u, p):
     return False, False
 
 def save_booking(data):
+    booking_id = str(uuid.uuid4())[:8]
     record = {
-        'booking_id': str(uuid.uuid4()),
+        'booking_id': booking_id,
         'username': session['username'],
         'movie_title': data['movie_title'],
         'theater': data['theater'],
@@ -136,6 +147,18 @@ def save_booking(data):
     }
     if USE_AWS: bookings_table.put_item(Item=record)
     else: local_bookings.append(record)
+    
+    # Retrieve User Mobile for SMS
+    user_mobile = "0000000000"
+    if USE_AWS:
+        try:
+            u_data = users_table.get_item(Key={'username': session['username']})
+            if 'Item' in u_data: user_mobile = u_data['Item']['mobile']
+        except: pass
+    elif session['username'] in local_users:
+        user_mobile = local_users[session['username']]['mobile']
+        
+    send_sms(user_mobile, f"Confirmed! {data['movie_title']} ({record['seats']}). ID: {booking_id}")
 
 def get_user_history_with_qr(username):
     source = []
@@ -152,12 +175,10 @@ def get_user_history_with_qr(username):
 
 # --- VALIDATORS ---
 def is_strong_password(p):
-    if len(p)<8 or not re.search(r"\d", p) or not re.search(r"[!@#$%^&*]", p): return False
-    return True
+    return len(p) >= 8 and re.search(r"\d", p) and re.search(r"[!@#$%^&*]", p)
 
 def is_valid_contact(e, m):
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", e) or not re.match(r"^\d{10}$", m): return False
-    return True
+    return re.match(r"[^@]+@[^@]+\.[^@]+", e) and re.match(r"^\d{10}$", m)
 
 def is_valid_luhn(n):
     n = n.replace(" ", "")
@@ -181,15 +202,13 @@ def dashboard():
     
     movies = get_all_movies()
     
-    # SEARCH LOGIC
+    # Search Logic
     query = request.args.get('q')
     if query:
         q = query.lower()
         movies = [m for m in movies if q in m['title'].lower() or q in m['genre'].lower()]
     
     movies.sort(key=lambda x: x.get('title'))
-    
-    # ANALYTICS (If Admin)
     analytics = get_analytics() if session.get('is_admin') else None
     
     return render_template('dashboard.html', movies=movies, is_admin=session.get('is_admin'), analytics=analytics)
@@ -235,8 +254,8 @@ def my_tickets():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        if not is_strong_password(request.form['password']): return render_template('signup.html', error="Weak Password")
-        if not is_valid_contact(request.form['email'], request.form['mobile']): return render_template('signup.html', error="Invalid Contact")
+        if not is_strong_password(request.form['password']): return render_template('signup.html', error="Weak Password (Need 8 chars, number, symbol)")
+        if not is_valid_contact(request.form['email'], request.form['mobile']): return render_template('signup.html', error="Invalid Email or Mobile (10 digits)")
         if create_user(request.form): return redirect(url_for('login'))
         return render_template('signup.html', error="User Exists")
     return render_template('signup.html')
@@ -249,7 +268,7 @@ def login():
             session['username'] = request.form['username']
             session['is_admin'] = admin
             return redirect(url_for('dashboard'))
-        return render_template('login.html', error="Invalid Login")
+        return render_template('login.html', error="Invalid Credentials")
     return render_template('login.html')
 
 @app.route('/admin/add', methods=['GET', 'POST'])
