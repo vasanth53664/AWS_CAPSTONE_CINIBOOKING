@@ -10,7 +10,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # --- CONFIGURATION SWITCH ---
 # CHANGE THIS TO 'True' WHEN DEPLOYING TO AWS EC2
 USE_AWS = True 
-REGION = 'ap-south-1'
+REGION = 'us-east-1'
 
 app = Flask(__name__)
 app.secret_key = 'movie_magic_sns_edition'
