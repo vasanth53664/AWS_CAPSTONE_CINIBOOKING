@@ -40,16 +40,8 @@ local_bookings = []
 # --- HELPER FUNCTIONS ---
 
 def get_sns_topic_arn():
-    """Auto-detects the SNS Topic ARN created in the Lab."""
-    if not USE_AWS: return None
-    try:
-        response = sns_client.list_topics()
-        # Returns the ARN of the first topic found
-        if response['Topics']:
-            return response['Topics'][0]['TopicArn']
-    except:
-        return None
-    return None
+    # REPLACE THE TEXT BELOW WITH YOUR COPIED ARN
+    return "arn:aws:sns:us-east-1:216989116084:MovieMagicTopic:24413a5a-c366-4347-80ab-9c1e78b78d26"
 
 def send_notification(subject, message):
     """Publishes a message to the SNS Topic (Emails all subscribers)."""
