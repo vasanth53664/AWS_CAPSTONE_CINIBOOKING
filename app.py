@@ -13,11 +13,11 @@ app.secret_key = 'aws_ultimate_key'
 # --- 1. AWS CONFIG ---
 REGION = 'us-east-1' # or 'ap-south-1'
 dynamodb = boto3.resource('dynamodb', region_name=REGION)
-sns_client = boto3.client('sns', region_name=REGION)
+table = dynamodb.Table('Cinibooker_Bookings')
 
-users_table = dynamodb.Table('MovieMagic_Users')
-movies_table = dynamodb.Table('MovieMagic_Movies')
-bookings_table = dynamodb.Table('MovieMagic_Bookings')
+bookings_table = dynamodb.Table('Cinibooker_Bookings')
+users_table = dynamodb.Table('Cinibooker_Users')
+movies_table = dynamodb.Table('Cinibooker_Movies')
 
 # --- 2. AWS HELPERS ---
 def get_sns_topic_arn():
