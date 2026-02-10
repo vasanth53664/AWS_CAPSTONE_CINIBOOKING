@@ -1,9 +1,12 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="container" style="text-align: center; padding-top: 4rem;">
-    <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
-    <h1>Booking Confirmed!</h1>
-    <p style="color: var(--text-muted); margin-bottom: 2rem;">We have sent a confirmation email to your inbox.</p>
-    <a href="/dashboard"><button class="btn-primary" style="width: auto;">Back to Movies</button></a>
-</div>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body style="text-align:center; display:flex; flex-direction:column; justify-content:center; height:100vh;">
+    <h1 style="font-size:80px; margin:0;">🎉</h1>
+    <h2 style="color:#2ecc71; font-size:40px;">Booking Confirmed!</h2>
+    <p style="color:#ccc;">Your seats have been reserved.</p>
+    <div>
+        <a href="{{ url_for('my_tickets') }}" class="btn" style="display:inline-block; width:auto; padding:15px 30px;">View Tickets</a>
+    </div>
+</body>
+</html>

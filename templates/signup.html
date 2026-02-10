@@ -1,18 +1,20 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="auth-box">
-    <h2 style="margin-bottom: 2rem;">Create Account</h2>
-    {% if error %}
-    <div style="background: rgba(229, 9, 20, 0.2); color: #ff6b6b; padding: 0.8rem; border-radius: 4px; margin-bottom: 1.5rem;">⚠️ {{ error }}</div>
-    {% endif %}
-    <form class="auth-form" action="/signup" method="POST">
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="email" name="email" placeholder="Email Address" required>
-        <input type="tel" name="mobile" placeholder="Mobile (10 digits)" pattern="[0-9]{10}" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <p style="text-align: left; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Security: 8+ chars, 1 number, 1 special symbol.</p>
-        <button class="btn-primary">Sign Up</button>
-    </form>
-    <p style="margin-top: 1.5rem; color: var(--text-muted);">Already a member? <a href="/login" style="color: var(--primary);">Login</a></p>
-</div>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body>
+    <nav class="navbar"><h2>🎬 Cinibooker</h2></nav>
+    <div class="auth-container">
+        <div class="auth-box">
+            <h2>Sign Up</h2>
+            {% if error %}<div class="error">{{ error }}</div>{% endif %}
+            <form method="POST">
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="text" name="mobile" placeholder="Mobile Number" required>
+                <input type="password" name="password" placeholder="Password" required>
+                <button type="submit" class="btn">Create Account</button>
+            </form>
+            <p style="margin-top:20px; color:#aaa; font-size:14px;">Already have an account? <a href="{{ url_for('login') }}" style="color:#00d2d3">Login</a></p>
+        </div>
+    </div>
+</body>
+</html>

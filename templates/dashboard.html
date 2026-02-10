@@ -1,58 +1,30 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="container">
-    
-    {% if is_admin and analytics %}
-    <div style="display: flex; gap: 1rem; margin-bottom: 3rem; flex-wrap: wrap;">
-        <div style="flex:1; background: #222; padding: 1.5rem; border-radius: 8px; border-top: 4px solid var(--primary);">
-            <p style="color: var(--text-muted); font-size: 0.9rem;">Total Revenue</p>
-            <h2 style="font-size: 2rem;">{{ analytics.revenue }}</h2>
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body>
+    <nav class="navbar">
+        <h2>🎬 Cinibooker</h2>
+        <div class="nav-links">
+            <span style="color:white; margin-right:20px;">Hi, {{ user }}</span>
+            <a href="{{ url_for('my_tickets') }}">My Tickets</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
         </div>
-        <div style="flex:1; background: #222; padding: 1.5rem; border-radius: 8px; border-top: 4px solid var(--accent);">
-            <p style="color: var(--text-muted); font-size: 0.9rem;">Tickets Sold</p>
-            <h2 style="font-size: 2rem;">{{ analytics.tickets }}</h2>
-        </div>
-        <div style="flex:1; background: #222; padding: 1.5rem; border-radius: 8px; border-top: 4px solid white;">
-            <p style="color: var(--text-muted); font-size: 0.9rem;">Top Movie</p>
-            <h2 style="font-size: 1.5rem;">{{ analytics.top_movie }}</h2>
-        </div>
-    </div>
-    {% endif %}
-
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-        <h2>Now Showing</h2>
-        {% if is_admin %}
-        <a href="/admin/add"><button class="btn-primary" style="width: auto; padding: 0.5rem 1rem;">+ Add Movie</button></a>
-        {% endif %}
-    </div>
-
-    <form action="/dashboard" method="GET" style="margin-bottom: 2rem; display: flex; gap: 10px;">
-        <input type="text" name="q" placeholder="Search by title or genre..." value="{{ request.args.get('q', '') }}" style="padding: 1rem; border-radius: 50px; background: #222; border: 1px solid #333; flex: 1; color: white;">
-        <button class="btn-primary" style="width: auto; border-radius: 50px; padding: 0 2rem;">Search</button>
-        {% if request.args.get('q') %}
-        <a href="/dashboard"><button type="button" style="background: #333; color: white; border: none; padding: 0 1.5rem; border-radius: 50px; height: 100%; cursor: pointer;">Clear</button></a>
-        {% endif %}
-    </form>
-
-    <div class="grid">
-        {% for movie in movies %}
-        <div class="movie-card">
-            <div class="card-img">🎬</div>
-            <div class="card-info">
-                <span class="tag">{{ movie.genre }}</span>
-                <h3>{{ movie.title }}</h3>
-                <p style="color: var(--accent); margin-bottom:0.5rem">📍 {{ movie.theaters|length }} Locations</p>
-                <p style="font-size: 0.9rem; color: var(--text-muted);">Time: {{ movie.time }}</p>
-                <a href="{{ url_for('book', movie_id=movie.movie_id) }}">
-                    <button class="btn-primary" style="margin-top: 1rem;">Book for ${{ movie.price }}</button>
-                </a>
+    </nav>
+    <div class="container">
+        <h1>Now Showing</h1>
+        <div class="movie-grid">
+            {% for movie in movies %}
+            <div class="movie-card">
+                <img src="{{ movie.poster }}" class="movie-poster">
+                <div class="movie-info">
+                    <h3 style="margin:0">{{ movie.title }}</h3>
+                    <div style="font-size:13px; color:#aaa; margin-top:5px;">{{ movie.genre }}</div>
+                    <div class="rating">⭐ {{ movie.rating }}/5</div>
+                    <a href="{{ url_for('book', movie_id=movie.movie_id) }}" class="btn" style="margin-top:15px; display:block;">Book Now</a>
+                </div>
             </div>
+            {% endfor %}
         </div>
-        {% else %}
-        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; color: var(--text-muted);">
-            <p style="font-size: 1.5rem;">😕 No movies found.</p>
-        </div>
-        {% endfor %}
     </div>
-</div>
-{% endblock %}
+</body>
+</html>

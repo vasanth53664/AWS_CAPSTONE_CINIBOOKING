@@ -1,40 +1,94 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="container" style="text-align: center;">
-    <h2 style="margin-bottom: 0.5rem;">{{ movie.title }}</h2>
-    <p style="color: var(--text-muted); margin-bottom: 2rem;">{{ movie.time }}</p>
-
-    <form action="/payment" method="GET">
-        <input type="hidden" name="movie_title" value="{{ movie.title }}">
-        <input type="hidden" name="price" value="{{ movie.price }}">
-
-        <div style="max-width: 300px; margin: 0 auto 2rem auto; text-align: left;">
-            <label style="color: var(--text-muted);">Select Theater</label>
-            <select name="theater" style="margin-top: 5px;">
-                {% for theater in movie.theaters %}
-                <option value="{{ theater }}">{{ theater }}</option>
-                {% endfor %}
-            </select>
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body>
+    <div class="container">
+        <h1>{{ movie.title }}</h1>
+        
+        <div class="filters">
+            <select id="dateSelect" onchange="refresh()">{% for d in dates %}<option value="{{ d }}">{{ d }}</option>{% endfor %}</select>
+            <select id="theaterSelect" onchange="refresh()">{% for t in movie.theaters %}<option value="{{ t }}">{{ t }}</option>{% endfor %}</select>
+            <select id="timeSelect" onchange="refresh()">{% for t in movie.showtimes %}<option value="{{ t }}">{{ t }}</option>{% endfor %}</select>
         </div>
 
-        <div class="screen"></div>
-        <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">SCREEN</p>
-
-        <div class="seat-grid">
-            {% for i in range(1, 41) %}
-                {% set seat_id = "A" ~ i %}
-                <div>
-                    {% if seat_id in occupied_seats %}
-                        <input type="checkbox" disabled>
-                        <label class="seat-label occupied"></label>
-                    {% else %}
-                        <input type="checkbox" id="{{ seat_id }}" name="seats" value="{{ seat_id }}">
-                        <label for="{{ seat_id }}" class="seat-label"></label>
-                    {% endif %}
-                </div>
-            {% endfor %}
+        <div class="screen-container">
+            <div class="screen" id="screenLabel">SCREEN</div>
+            <div id="seat-map"></div>
         </div>
-        <button class="btn-primary" style="max-width: 300px; margin-top: 2rem;">Proceed to Payment</button>
-    </form>
-</div>
-{% endblock %}
+        <div style="height:100px;"></div> </div>
+
+    <div class="info-panel">
+        <div><small style="color:#aaa">SELECTED</small><div id="seatDisplay" style="color:#00d2d3; font-weight:bold; font-size:18px;">None</div></div>
+        <div><small style="color:#aaa">TOTAL</small><div style="font-weight:bold; font-size:24px;">₹<span id="priceDisplay">0</span></div></div>
+        <form action="{{ url_for('payment') }}" method="GET" style="margin:0">
+            <input type="hidden" name="movie_title" value="{{ movie.title }}">
+            <input type="hidden" name="price" value="{{ movie.price }}">
+            <input type="hidden" name="date" id="formDate"><input type="hidden" name="theater" id="formTheater"><input type="hidden" name="time" id="formTime">
+            <button type="submit" class="btn" id="payBtn" disabled>Proceed to Pay</button>
+        </form>
+    </div>
+
+    <script>
+        let selected = []; const price = {{ movie.price }};
+        const movieTitle = "{{ movie.title }}";
+
+        async function refresh() {
+            const d=document.getElementById('dateSelect').value, t=document.getElementById('theaterSelect').value, tm=document.getElementById('timeSelect').value;
+            // Sync form
+            document.getElementById('formDate').value=d; document.getElementById('formTheater').value=t; document.getElementById('formTime').value=tm;
+            
+            selected = []; update(); // Reset
+            
+            // Fetch API
+            const res = await fetch(`/api/seats?title=${encodeURIComponent(movieTitle)}&theater=${encodeURIComponent(t)}&date=${d}&time=${encodeURIComponent(tm)}`);
+            const data = await res.json();
+            renderMap(data.layout, data.occupied);
+        }
+
+        function renderMap(layout, occupied) {
+            const map = document.getElementById('seat-map'); map.innerHTML='';
+            document.getElementById('screenLabel').innerText = layout.label;
+            const rows = ['A','B','C','D','E','F','G','H','I','J'];
+
+            for(let r=0; r<layout.rows; r++) {
+                const rowDiv = document.createElement('div'); rowDiv.className='row';
+                const lbl = document.createElement('div'); lbl.className='row-label'; lbl.innerText=rows[r]; rowDiv.appendChild(lbl);
+                
+                for(let c=1; c<=layout.cols; c++) {
+                    const s = document.createElement('div'); s.className='seat'; s.innerText=c;
+                    const id = rows[r]+c; s.dataset.id=id;
+                    
+                    if(c === layout.aisle) s.style.marginRight='40px'; // Aisle gap
+                    
+                    if(occupied.includes(id)) { s.classList.add('occupied'); }
+                    else { s.onclick = () => toggle(s); }
+                    
+                    rowDiv.appendChild(s);
+                }
+                map.appendChild(rowDiv);
+            }
+        }
+
+        function toggle(el) {
+            el.classList.toggle('selected');
+            const id = el.dataset.id;
+            selected.includes(id) ? selected=selected.filter(x=>x!==id) : selected.push(id);
+            update();
+        }
+
+        function update() {
+            document.getElementById('seatDisplay').innerText = selected.length ? selected.join(', ') : 'None';
+            document.getElementById('priceDisplay').innerText = selected.length * price;
+            document.getElementById('payBtn').disabled = !selected.length;
+
+            const form = document.querySelector('form');
+            form.querySelectorAll('input[name="seats"]').forEach(e=>e.remove());
+            selected.forEach(s => {
+                const i = document.createElement('input'); i.type='hidden'; i.name='seats'; i.value=s;
+                form.appendChild(i);
+            });
+        }
+        window.onload = refresh;
+    </script>
+</body>
+</html>

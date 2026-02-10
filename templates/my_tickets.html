@@ -1,28 +1,46 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="container">
-    <h2 style="margin-bottom: 2rem;">My Ticket History</h2>
-    {% if bookings %}
-        <div class="grid">
-            {% for ticket in bookings %}
-            <div class="movie-card" style="border-left: 4px solid var(--accent); display: flex; flex-direction: column;">
-                <div class="card-info" style="flex: 1;">
-                    <h3 style="margin-top: 0.5rem;">{{ ticket.movie_title }}</h3>
-                    <p style="color: var(--text-main);">📍 {{ ticket.theater }}</p>
-                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
-                        Seats: <span style="color: var(--primary); font-weight: bold;">{{ ticket.seats }}</span> <br>
-                        Date: {{ ticket.date }}
-                    </p>
-                    <div style="background: white; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 1rem;">
-                        <img src="data:image/png;base64,{{ ticket.qr_code }}" alt="Ticket QR" style="width: 120px; height: 120px;">
-                        <p style="color: black; font-size: 0.7rem; margin-top: 5px; font-weight: bold;">SCAN AT ENTRY</p>
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body>
+    <nav class="navbar">
+        <h2>🎬 Cinibooker</h2>
+        <div class="nav-links"><a href="{{ url_for('dashboard') }}">Back to Movies</a></div>
+    </nav>
+    <div class="container">
+        <h2 style="text-align:center; margin-bottom:40px;">My Bookings</h2>
+        
+        {% for b in bookings %}
+        <div class="ticket">
+            <div class="ticket-poster" style="background-image: url('{{ b.poster }}')"></div>
+            <div class="ticket-info">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h3 style="margin:0; color:#1a1a2e;">{{ b.movie_title }}</h3>
+                    <span class="status-badge">Confirmed</span>
+                </div>
+                
+                <div class="detail-row">
+                    <div><span class="label">Date</span><div class="value">{{ b.date }}</div></div>
+                    <div><span class="label">Time</span><div class="value">{{ b.time }}</div></div>
+                </div>
+                <div class="detail-row">
+                    <div><span class="label">Theater</span><div class="value">{{ b.theater }}</div></div>
+                    <div><span class="label">Seats</span><div class="value" style="color:#e94560; font-size:18px;">{{ b.seats }}</div></div>
+                </div>
+
+                <div style="background:#f8f9fa; padding:10px; border-radius:8px; display:flex; align-items:center; gap:15px;">
+                    <img src="data:image/png;base64,{{ b.qr_code }}" width="80">
+                    <div style="font-size:11px; color:#666;">
+                        <strong>Scan at entry</strong><br>Order ID: #{{ b.booking_id }}
                     </div>
                 </div>
             </div>
-            {% endfor %}
         </div>
-    {% else %}
-        <p style="text-align: center; padding: 4rem; color: var(--text-muted);">No tickets booked yet.</p>
-    {% endif %}
-</div>
-{% endblock %}
+        {% else %}
+        <div style="text-align:center; color:#777; margin-top:50px;">
+            <h3>No tickets found</h3>
+            <p>Go book a movie to see your digital pass here.</p>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

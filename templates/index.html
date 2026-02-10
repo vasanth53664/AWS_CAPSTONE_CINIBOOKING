@@ -1,10 +1,12 @@
-{% extends 'base.html' %}
-{% block content %}
-<div class="hero">
-    <h1>The Future of <span style="color: var(--primary);">Cinema Booking</span></h1>
-    <p>Experience seamless, cloud-powered ticket booking. Real-time availability, instant confirmations, and zero queues.</p>
-    <a href="/signup" style="margin-top: 2rem;">
-        <button class="btn-primary" style="padding: 1rem 3rem; font-size: 1.2rem;">Get Started</button>
-    </a>
-</div>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body style="display:flex; justify-content:center; align-items:center; height:100vh; text-align:center; flex-direction:column;">
+    <h1 style="font-size:60px; color:#e94560; margin-bottom:10px;">Cinibooker 🎬</h1>
+    <p style="color:#ccc; font-size:20px; margin-bottom:40px;">Experience Movies Like Never Before</p>
+    <div>
+        <a href="{{ url_for('login') }}" class="btn" style="width:200px; display:inline-block; margin:10px;">Login</a>
+        <a href="{{ url_for('signup') }}" class="btn" style="width:200px; display:inline-block; background:#00d2d3; color:#1a1a2e; margin:10px;">Sign Up</a>
+    </div>
+</body>
+</html>
